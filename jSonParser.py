@@ -5,26 +5,55 @@ class MyObject(object):
 
 class JObject(MyObject):
     def __init__(self, o):
-        MyObject.__init__(self)
+        super(JObject, self).__init__()
         self.o = o
 
     def __repr__(self):
         ol = map(lambda x: str(x[0]) + ":" + str(x[1]), self.o)
         return "{" + ",".join(ol) + "}"
 
+    def __getitem__(self, item):
+        for k, v in self.o:
+            if k.a == item:
+                return v
+        raise Exception("No such key in object : %s" % self)
+
+    def __setitem__(self, key, value):
+        count = 0
+        for k, v in self.o:
+            if k.a == key:
+                if not isinstance(value, MyObject):
+                    raise Exception("Illegal type object: %s" % value)
+                self.o[count] = (k, value)
+                return
+            count += 1
+        self.o.append((JString(key), value))
+
 
 class JArray(MyObject):
     def __init__(self, l):
-        MyObject.__init__(self)
+        super(JArray, self).__init__()
         self.l = l
 
     def __repr__(self):
         return "[" + ",".join(map(str, self.l)) + "]"
 
+    def __getitem__(self, item):
+        return self.l[item]
+
+    def __setitem__(self, key, value):
+        self.l[key] = value
+
+    def append(self, item):
+        self.l.append(item)
+
+    def remove(self, item):
+        self.l.remove(item)
+
 
 class JString(MyObject):
     def __init__(self, a):
-        MyObject.__init__(self)
+        super(JString, self).__init__()
         self.a = a
 
     def __repr__(self):
@@ -33,7 +62,7 @@ class JString(MyObject):
 
 class JNumber(MyObject):
     def __init__(self, n):
-        MyObject.__init__(self)
+        super(JNumber, self).__init__()
         self.n = n
 
     def __repr__(self):
@@ -42,7 +71,7 @@ class JNumber(MyObject):
 
 class JBool(MyObject):
     def __init__(self, b):
-        MyObject.__init__(self)
+        super(JBool, self).__init__()
         self.b = b
 
     def __repr__(self):
@@ -53,7 +82,7 @@ class JBool(MyObject):
 
 class JNull(MyObject):
     def __init__(self):
-        MyObject.__init__(self)
+        super(JNull, self).__init__()
 
     def __repr__(self):
         return "null"
@@ -62,7 +91,7 @@ class JNull(MyObject):
 def load(s):
     s = trim(s)
     if len(s) == 0:
-        raise Exception("empty string.")
+        raise Exception("Empty string.")
 
     if s[0] == "{":
         o = parse_obj(s)
@@ -71,7 +100,7 @@ def load(s):
         a = parse_array(s)
         return a[0]
     else:
-        raise Exception("parse error:" + s)
+        raise Exception("Parse error: %s" % s)
 
 
 def trim(s):
@@ -89,11 +118,11 @@ def parse_obj(s):
     l = []
     while True:
         if s[0] != '"':
-            raise Exception('expecting a "')
+            raise Exception('Expecting a "')
         key, s = parse_string(s)
         s = trim(s)
         if s[0] != ':':
-            raise Exception('expecting a :')
+            raise Exception('Expecting a :')
         s = trim(s[1:])
         val, s = parse_value(s)
         s = trim(s)
@@ -103,7 +132,7 @@ def parse_obj(s):
         elif s[0] == '}':
             return JObject(l), s[1:]
         else:
-            raise Exception('expecting a , or }')
+            raise Exception('Expecting a , or }')
 
 
 def parse_array(s):
@@ -120,7 +149,7 @@ def parse_array(s):
         elif s[0] == ']':
             return JArray(a), s[1:]
         else:
-            raise Exception('expecting a , or ]')
+            raise Exception('Expecting a , or ]')
 
 
 def parse_string(s):
@@ -135,29 +164,29 @@ def parse_string(s):
             escape = True
         index += 1
     if index >= len(s) or s[index] != '"':
-        raise Exception('expecting a "')
-    return JString(s[1:index]), s[index+1:]
+        raise Exception('Expecting a "')
+    return JString(s[1:index]), s[index + 1:]
 
 
 def parse_null(s):
     if s.startswith("null"):
         return JNull(), s[4:]
     else:
-        raise Exception("failed to parse:" + s)
+        raise Exception("Failed to parse: %s" % s)
 
 
 def parse_true(s):
     if s.startswith("true"):
         return JBool(True), s[4:]
     else:
-        raise Exception("failed to parse:" + s)
+        raise Exception("Failed to parse: %s" % s)
 
 
 def parse_false(s):
     if s.startswith("false"):
         return JBool(False), s[5:]
     else:
-        raise Exception("failed to parse:" + s)
+        raise Exception("Failed to parse: %s" % s)
 
 
 def parse_number(s):
@@ -168,7 +197,7 @@ def parse_number(s):
     try:
         return JNumber(float(s[:index])), s[index:]
     except Exception:
-        raise Exception("failed to parse:" + s)
+        raise Exception("Failed to parse: %s" % s)
 
 
 def parse_value(s):
