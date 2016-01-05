@@ -3,12 +3,6 @@ import jSonParser
 
 
 class jSonParser_Test(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     def test_load(self):
         callback = str
         assert_iteself(jSonParser.load, callback, ('["foo", {"bar":["baz", null, 1.0, 2]}]'))
