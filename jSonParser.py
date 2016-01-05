@@ -75,15 +75,6 @@ def load(s):
 
 
 def trim(s):
-    """
-    trim the whitespaces in the head
-    >>> trim(" ")
-    ''
-    >>> trim(" a")
-    'a'
-    >>> trim("    a  b")
-    'a  b'
-    """
     index = 0
     whites = " \r\n"
     while index < len(s) and s[index] in whites:
@@ -92,17 +83,6 @@ def trim(s):
 
 
 def parse_obj(s):
-    """
-    parse object from the header of the input
-    >>> parse_obj('{"1":true}')
-    ({"1":true}, '')
-    >>> parse_obj('{"1":true, "wa":[1,2,3,4]}')
-    ({"1":true,"wa":[1.0,2.0,3.0,4.0]}, '')
-    >>> parse_obj('{"name":"test","age":"18"}')
-    ({"name":"test","age":"18"}, '')
-    >>> parse_obj('{"people":null}')
-    ({"people":null}, '')
-    """
     s = trim(s[1:])
     if s[0] == "}":
         return JObject([]), s[1:]
@@ -127,15 +107,6 @@ def parse_obj(s):
 
 
 def parse_array(s):
-    """
-    parse array from the header of the input
-    >>> parse_array('[1,\"w]a\"]haha')
-    ([1.0,"w]a"], 'haha')
-    >>> parse_array("[1, true]")
-    ([1.0,true], '')
-    >>> parse_array("[1, true  ]")
-    ([1.0,true], '')
-    """
     s = trim(s[1:])
     if s[0] == "]":
         return JArray([]), s[1:]
@@ -153,15 +124,6 @@ def parse_array(s):
 
 
 def parse_string(s):
-    """
-    parse string from the header of the input
-    >>> parse_string('\"wa\"haha')
-    ("wa", 'haha')
-    >>> parse_string('\"w\\\\\\"a\"haha')
-    ("w\\\"a", 'haha')
-    >>> parse_string('"wa\\\\\\\\"haha')
-    ("wa\\\\", 'haha')
-    """
     index = 1
     escape = False
     while index < len(s):
@@ -199,15 +161,6 @@ def parse_false(s):
 
 
 def parse_number(s):
-    """
-    parse number from the header of the input
-    >>> parse_number("1")
-    (1.0, '')
-    >>> parse_number("1.0a")
-    (1.0, 'a')
-    >>> parse_number("1.0 a")
-    (1.0, ' a')
-    """
     index = 0
     ns = "1234567890-+."
     while index < len(s) and s[index] in ns:
@@ -233,8 +186,3 @@ def parse_value(s):
         return parse_array(s)
     else:
         return parse_number(s)
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
