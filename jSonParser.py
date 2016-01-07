@@ -16,14 +16,14 @@ class JObject(MyObject):
         for k, v in self.o:
             if k.a == item:
                 return v
-        raise Exception("No such key in object : %s" % self)
+        raise ParseException("No such key in object : %s" % self)
 
     def __setitem__(self, key, value):
         count = 0
         for k, v in self.o:
             if k.a == key:
                 if not isinstance(value, MyObject):
-                    raise Exception("Illegal type object: %s" % value)
+                    raise ParseException("Illegal type object: %s" % value)
                 self.o[count] = (k, value)
                 return
             count += 1
@@ -87,11 +87,14 @@ class JNull(MyObject):
     def __repr__(self):
         return "null"
 
+class ParseException(Exception):
+    pass
+
 
 def load(s):
     s = trim(s)
     if len(s) == 0:
-        raise Exception("Empty string.")
+        raise ParseException("Empty string.")
 
     if s[0] == "{":
         o = parse_obj(s)
@@ -100,7 +103,7 @@ def load(s):
         a = parse_array(s)
         return a[0]
     else:
-        raise Exception("Parse error: %s" % s)
+        raise ParseException("Parse error: %s" % s)
 
 
 def trim(s):
@@ -118,11 +121,11 @@ def parse_obj(s):
     l = []
     while True:
         if s[0] != '"':
-            raise Exception('Expecting a "')
+            raise ParseException('Expecting a "')
         key, s = parse_string(s)
         s = trim(s)
         if s[0] != ':':
-            raise Exception('Expecting a :')
+            raise ParseException('Expecting a :')
         s = trim(s[1:])
         val, s = parse_value(s)
         s = trim(s)
@@ -132,7 +135,7 @@ def parse_obj(s):
         elif s[0] == '}':
             return JObject(l), s[1:]
         else:
-            raise Exception('Expecting a , or }')
+            raise ParseException('Expecting a , or }')
 
 
 def parse_array(s):
@@ -149,7 +152,7 @@ def parse_array(s):
         elif s[0] == ']':
             return JArray(a), s[1:]
         else:
-            raise Exception('Expecting a , or ]')
+            raise ParseException('Expecting a , or ]')
 
 
 def parse_string(s):
@@ -164,7 +167,7 @@ def parse_string(s):
             escape = True
         index += 1
     if index >= len(s) or s[index] != '"':
-        raise Exception('Expecting a "')
+        raise ParseException('Expecting a "')
     return JString(s[1:index]), s[index + 1:]
 
 
@@ -172,21 +175,21 @@ def parse_null(s):
     if s.startswith("null"):
         return JNull(), s[4:]
     else:
-        raise Exception("Failed to parse: %s" % s)
+        raise ParseException("Failed to parse: %s" % s)
 
 
 def parse_true(s):
     if s.startswith("true"):
         return JBool(True), s[4:]
     else:
-        raise Exception("Failed to parse: %s" % s)
+        raise ParseException("Failed to parse: %s" % s)
 
 
 def parse_false(s):
     if s.startswith("false"):
         return JBool(False), s[5:]
     else:
-        raise Exception("Failed to parse: %s" % s)
+        raise ParseException("Failed to parse: %s" % s)
 
 
 def parse_number(s):
@@ -197,7 +200,7 @@ def parse_number(s):
     try:
         return JNumber(float(s[:index])), s[index:]
     except Exception:
-        raise Exception("Failed to parse: %s" % s)
+        raise ParseException("Failed to parse: %s" % s)
 
 
 def parse_value(s):
