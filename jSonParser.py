@@ -87,6 +87,7 @@ class JNull(MyObject):
     def __repr__(self):
         return "null"
 
+
 class ParseException(Exception):
     pass
 
