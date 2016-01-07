@@ -39,7 +39,7 @@ It allows you to load json format string,
                 "lastName": "Rachmaninoff",
                 "instrument": "piano"
             }]
-        }
+        }"""
         
         r = jSonParser.load(long_text)
         r["authors"][0]["firstName"] = jSonParser.JString("Test_F")
